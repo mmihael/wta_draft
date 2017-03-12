@@ -1,0 +1,23 @@
+{
+  "ID": "EFA23B56",
+  "Status": 32856,
+  "WaterHardness": 300,
+  "PH": 7.2,
+  "Turbidity": 45,
+  "WaterTemperature": 24.3,
+  "WaterColor": "FB3456",
+  "ApplianceName": "Garden pool",
+  "MessageString": "PH value is outside the range 6.8 ~ 7,6",
+  "CopperReleased": 0.87,
+  "ContainerMLCapacity": 50,
+  "ContainerCuLevel": 45,
+  "CopperElectrodeMass": 320,
+  "WaterFlow": 54.4,
+  "WaterVolume": 56,
+  "Key1": "DEADBEEF",
+  "Key2": "ABCDEF01",
+  "Key3": "ABCDEF02",
+  "OnTime": 234567,
+  "StationSSID": "Cazonet",
+  "StationPwd": "Password01!"
+}
