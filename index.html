@@ -19,7 +19,16 @@
             <transition name="fade" mode="out-in">
                 <div v-if="view.active === 'home'" class="row" key="home">
                     <div class="col-xs-12 col-md-12">
-                        <div class="alert alert-info">{{ status.MessageString }}</div>
+                        <div class="alert alert-info">
+                            <strong>{{ status.MessageString }}</strong>
+                            <div v-if="!_statusBitOn(0)" class="text-danger"><strong>{{ lang['The copper electrode needs to be replaced'] }}</strong></div>
+                            <div v-if="_statusBitOn(1)" class="text-danger"><strong>{{ lang['Short circuit detected on the Titanium electrode'] }}</strong></div>
+                            <div v-if="_statusBitOn(2)" class="text-danger"><strong>{{ lang['Short circuit detected on the Copper electrode'] }}</strong></div>
+                            <div v-if="!_statusBitOn(3)" class="text-danger"><strong>{{ lang['No water detected'] }}</strong></div>
+                            <div v-if="!_statusBitOn(4)" class="text-danger"><strong>{{ lang['No PH probe is attached'] }}</strong></div>
+                            <div v-if="_statusBitOn(11)" class="text-info"><strong>{{ lang['The PH probe has been calibrated'] }}</strong></div>
+                            <div v-if="_statusBitOn(12)" class="text-info"><strong>{{ lang['The PH probe is not calibrated'] }}</strong></div>
+                        </div>
                     </div>
                     <div class="col-xs-12 col-md-4">
                         <button v-on:click="view.active = 'waterProperties'" type="button" class="btn btn-info home-option">{{ lang['Water properties'] }}</button>
@@ -30,6 +39,19 @@
                     <div class="col-xs-12 col-md-4">
                         <button v-on:click="view.active = 'settings'" type="button" class="btn btn-info home-option">{{ lang['Settings'] }}</button>
                     </div>
+                    <div class="clearfix"></div>
+                    <div class="col-md-12 text-info"><strong>{{ lang['On Time'] }}:</strong> {{ onTimeDisplayString }}</div>
+                    <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Sleep mode'] }}:</label>
+                        <div v-bind:style="sleepMode ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                            <span v-bind:style="sleepMode ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Electrolysis cycle status'] }}:</label>
+                        <div v-bind:style="electrolysisCycleStatus ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                            <span v-bind:style="electrolysisCycleStatus ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-4"></div>
                 </div>
                 <div v-if="view.active === 'waterProperties'" class="row" key="waterProperties">
                     <div class="col-md-4"></div>
@@ -65,7 +87,7 @@
                         <div class="form-group">
                             <label>{{ lang['PH'] }}</label>
                             <div class="input-group">
-                                <gauge v-bind:value="status.PH" max="14"></gauge>
+                                <gauge isph="true" v-bind:value="status.PH" max="14"></gauge>
                                 <span class="input-group-addon">PH</span>
                             </div>
                             <!--<input v-model="status.PH" type="text" disabled class="form-control" id="PH">-->
@@ -130,23 +152,23 @@
                     <div class="col-md-4"></div>
                     <div class="clearfix"></div>
 
-                    <div class="col-md-4"></div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="ContainerMLCapacity">{{ lang['Container Capacity'] }}</label>
-                            <div class="input-group">
-                                <input v-model="status.ContainerMLCapacity" type="text" disabled class="form-control" id="ContainerMLCapacity">
-                                <span class="input-group-addon">ml</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4"></div>
-                    <div class="clearfix"></div>
+                    <!--<div class="col-md-4"></div>-->
+                    <!--<div class="col-md-4">-->
+                        <!--<div class="form-group">-->
+                            <!--<label for="ContainerMLCapacity">{{ lang['Container Capacity'] }}</label>-->
+                            <!--<div class="input-group">-->
+                                <!--<input v-model="status.ContainerMLCapacity" type="text" disabled class="form-control" id="ContainerMLCapacity">-->
+                                <!--<span class="input-group-addon">ml</span>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="col-md-4"></div>-->
+                    <!--<div class="clearfix"></div>-->
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>{{ lang['Copper Level'] }}</label>
+                            <label>{{ lang['Container CU Level'] }}</label>
                             <div class="input-group">
                                 <gauge v-bind:value="status.ContainerCuLevel" v-bind:max="status.ContainerMLCapacity"></gauge>
                                 <span class="input-group-addon">ppm</span>
@@ -156,18 +178,18 @@
                     <div class="col-md-4"></div>
                     <div class="clearfix"></div>
 
-                    <div class="col-md-4"></div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>{{ lang['Copper Electrode Mass'] }}</label>
-                            <div class="input-group">
-                                <input v-model="status.CopperElectrodeMass" type="text" disabled class="form-control">
-                                <span class="input-group-addon">g</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4"></div>
-                    <div class="clearfix"></div>
+                    <!--<div class="col-md-4"></div>-->
+                    <!--<div class="col-md-4">-->
+                        <!--<div class="form-group">-->
+                            <!--<label>{{ lang['Copper Electrode Mass'] }}</label>-->
+                            <!--<div class="input-group">-->
+                                <!--<input v-model="status.CopperElectrodeMass" type="text" disabled class="form-control">-->
+                                <!--<span class="input-group-addon">g</span>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="col-md-4"></div>-->
+                    <!--<div class="clearfix"></div>-->
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
@@ -218,6 +240,10 @@
                             <div class="text-danger">{{ validations.Key1 }}</div>
                             <label for="Key1">Key #1</label>
                             <input v-on:input="_validateHexKey('Key1')" v-bind="{ disabled: _statusBitOn(15), style: { 'color': _statusBitOn(15) ? 'green' : '', 'font-weight': _statusBitOn(15) ? 'bold' : '' } }" v-model="status.Key1" type="text" class="form-control" id="Key1">
+                            <strong v-if="!_statusBitOn(15)" class="text-info">
+                                <span v-if="key1daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key1daysLeft }}</span>
+                                <span v-else>{{ lang['Trial license expired'] }}</span>
+                            </strong>
                         </div>
                     </div>
                     <div class="col-md-4"></div>
@@ -229,9 +255,13 @@
                             <div class="text-danger">{{ validations.Key2 }}</div>
                             <label for="Key2">Key #2</label>
                             <input v-on:input="_validateHexKey('Key2')" v-bind="{ disabled: _statusBitOn(16), style: { 'color': _statusBitOn(16) ? 'green' : '', 'font-weight': _statusBitOn(16) ? 'bold' : '' } }" v-model="status.Key2" type="text" class="form-control" id="Key2">
+                            <strong v-if="!_statusBitOn(16)" class="text-info">
+                                <span v-if="key2daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key2daysLeft }}</span>
+                                <span v-else>{{ lang['Trial license expired'] }}</span>
+                            </strong>
                         </div>
                     </div>
-                    <div class="col-md-4"></div>
+                    <div class="col-md-4 text-info"></div>
                     <div class="clearfix"></div>
 
                     <div class="col-md-4"></div>
@@ -240,9 +270,13 @@
                             <div class="text-danger">{{ validations.Key3 }}</div>
                             <label for="Key1">Key #3</label>
                             <input v-on:input="_validateHexKey('Key3')" v-bind="{ disabled: _statusBitOn(17), style: { 'color': _statusBitOn(17) ? 'green' : '', 'font-weight': _statusBitOn(17) ? 'bold' : '' } }" v-model="status.Key3" type="text" class="form-control" id="Key3">
+                            <strong v-if="!_statusBitOn(17)" class="text-info">
+                                <span v-if="key3daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key3daysLeft }}</span>
+                                <span v-else>{{ lang['Trial license expired'] }}</span>
+                            </strong>
                         </div>
                     </div>
-                    <div class="col-md-4"></div>
+                    <div class="col-md-4 text-info"></div>
                     <div class="clearfix"></div>
 
                     <div class="col-md-4"></div>
@@ -267,7 +301,6 @@
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
-                        <button type="submit" class="btn btn-success">{{ lang['Submit'].toUpperCase() }}</button>
                         <button  v-on:click="view.active = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
                     </div>
                     <div class="col-md-4"></div>
@@ -279,9 +312,11 @@
     <br>
     <br>
     <div id="gauge" style="display: none;">
-        <div style="width: 100%; height: 32px; border: 1px solid #cccccc; border-radius: 3px 0 0 3px; background-color: white;">
-            <div class="text-center" v-bind="{ style: { width: size() + '%', 'background-color': color()  } }"
-                 style="height: 100%; transition: width 1s ease-out; padding: 4px 0 0 0;">{{ value }}</div>
+        <div v-bind:class="isph ? 'ph' : ''" style="width: 100%; height: 32px; border: 1px solid #cccccc; border-radius: 3px 0 0 3px; background-color: white;">
+            <div v-bind:class="isph ? 'text-right' : 'text-center'" v-bind="{ style: { width: size() + '%', 'background-color': color()  } }"
+                 style="height: 100%; transition: width 1s ease-out; padding: 4px 0 0 0;">
+                <span v-bind:class="isph ? 'ph-text' : ''">{{ value }}</span>
+            </div>
         </div>
     </div>
     <script src="/vue.min.js"></script>

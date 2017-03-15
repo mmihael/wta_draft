@@ -8,7 +8,7 @@ var translations = {
         'Electrodes': 'Electrodes',
         'Settings': 'Settings',
         'Water Hardness': 'Water Hardness',
-        'Copper Level': 'Copper Level',
+        'Container CU Level': 'Container CU Level',
         'Turbidity': 'Turbidity',
         'PH': 'PH',
         'Water Temperature': 'Water Temperature',
@@ -26,6 +26,18 @@ var translations = {
         'Appliance Name': 'Appliance Name',
         'Key must be HEX number between 00 00 00 00 and FF FF FF FF': 'Key must be HEX number between 00 00 00 00 and FF FF FF FF',
         'Submit': 'Submit',
+        'The copper electrode needs to be replaced': 'The copper electrode needs to be replaced',
+        'Short circuit detected on the Titanium electrode': 'Short circuit detected on the Titanium electrode',
+        'Short circuit detected on the Copper electrode': 'Short circuit detected on the Copper electrode',
+        'No water detected': 'No water detected',
+        'No PH probe is attached': 'No PH probe is attached',
+        'On Time': 'On Time',
+        'The PH probe has been calibrated': 'The PH probe has been calibrated',
+        'The PH probe is not calibrated': 'The PH probe is not calibrated',
+        'Sleep mode': 'Sleep mode',
+        'Electrolysis cycle status': 'Electrolysis cycle status',
+        'Trial license expired': 'Trial license expired',
+        'Trial license days left': 'Trial license days left',
    }
 //   ,
 //   'hr': {
@@ -53,10 +65,12 @@ var progress = Vue.component('gauge', {
     props: {
         'value': { type: Number, default: 0 },
         'max': { type: Number, default: 100 },
+        'isph': {type: Boolean, default: false }
     },
     methods: {
         size: function () { return (this.value / this.max) * 100; },
         color: function () {
+            if (this.isph) { return ''; }
             var index = Math.floor(this.size() / 25);
             if (index > 3) { index = 3; }
             return this.colors[index];
@@ -64,7 +78,7 @@ var progress = Vue.component('gauge', {
     },
     data: function () {
         return {
-            colors: ['red', 'orange', 'yellow', 'green']
+            colors: ['#d9534f', '#fb9606', '#ecef34', '#5cb85c']
         };
     }
 });
@@ -106,30 +120,51 @@ var app = new Vue({
             var req = this.$http.get('/mock.json');
             req.then(
                 function (res) {
-                    if (['settings'].indexOf(this.view.active) == -1) { this.status = res.body; }
+                    if (['settings'].indexOf(this.view.active) == -1) {
+                        this.status = res.body;
+                        if (this.status.OnTime != null) {
+                            var date = new Date();
+                            date.setTime(this.status.OnTime * 1000);
+                            this.onTimeDisplayString = date.toUTCString();
+                            var tillOnTime = date - new Date();
+                            if (tillOnTime > 0) {
+                                var daysleft = Math.ceil(tillOnTime / 86400000);
+                                this.key1daysLeft = daysleft - 30;
+                                this.key2daysLeft = daysleft - 60;
+                                this.key3daysLeft = daysleft - 90;
+                            } else {
+                                this.key1daysLeft = 0;
+                                this.key2daysLeft = 0;
+                                this.key3daysLeft = 0;
+                            }
+                        }
+                        this.sleepMode = this._statusBitOn(18);
+                        this.electrolysisCycleStatus = this._statusBitOn(19);
+                    }
                     console.log(res);
+                    setTimeout(this._updater, this.updaterInterval);
                 }.bind(this),
-                function (res) { console.log(res); }
+                function (res) { setTimeout(this._updater, this.updaterInterval); console.log(res); }.bind(this)
             );
-            setTimeout(this._updater, this.updaterInterval);
         },
         _changeLanguage: function () {
             this.lang = translations[this.activeLanguage.toLowerCase()];
         },
         _statusBitOn: function (position) {
-//        console.log("Position: ");
-//        console.log(this.status.Status);
-//        console.log(position);
-//        console.log(this.status.Status & Math.pow(2, position));
-//        console.log((this.status.Status & Math.pow(2, position)) > 0);
             return (this.status.Status & Math.pow(2, position)) > 0;
         },
     },
 
     data: {
         view: {
-            active: 'home' //home
+            active: 'home'
         },
+        onTimeDisplayString: '',
+        sleepMode: null,
+        electrolysisCycleStatus: null,
+        key1daysLeft: null,
+        key2daysLeft: null,
+        key3daysLeft: null,
         status: {},
         validations: {
             WaterVolume: '',
@@ -144,11 +179,7 @@ var app = new Vue({
             translations['en-us']
         ),
         languages: Object.keys(translations),
-        activeLanguage: null,
+        activeLanguage: 'en-us',
         updaterInterval: 1000
-    },
-
-    computed: {
-        statusBit0: function () { return this._statusBitOn(0); }
     }
 });

@@ -3447,3 +3447,19 @@ html, body {
 label {
     color: #00ccff;
 }
+
+.ph {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ff0000+0,ffee00+20,26e500+38,0014ce+52,7500f2+70,f700da+91&1+99,0+100 */
+    background: -moz-linear-gradient(left,  rgba(255,0,0,1) 0%, rgba(255,238,0,1) 20%, rgba(38,229,0,1) 38%, rgba(0,20,206,1) 52%, rgba(117,0,242,1) 70%, rgba(247,0,218,1) 91%, rgba(247,0,218,1) 99%, rgba(247,0,218,0) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(left,  rgba(255,0,0,1) 0%,rgba(255,238,0,1) 20%,rgba(38,229,0,1) 38%,rgba(0,20,206,1) 52%,rgba(117,0,242,1) 70%,rgba(247,0,218,1) 91%,rgba(247,0,218,1) 99%,rgba(247,0,218,0) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to right,  rgba(255,0,0,1) 0%,rgba(255,238,0,1) 20%,rgba(38,229,0,1) 38%,rgba(0,20,206,1) 52%,rgba(117,0,242,1) 70%,rgba(247,0,218,1) 91%,rgba(247,0,218,1) 99%,rgba(247,0,218,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff0000', endColorstr='#00f700da',GradientType=1 ); /* IE6-9 */
+}
+
+.ph-text{
+    color: black;
+    border: 1px solid #cccccc;
+    background-color: #eeeeee;
+    font-weight: bold;
+    padding: 6px 3px 8px 3px;
+}
