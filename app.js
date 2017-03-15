@@ -117,7 +117,7 @@ var app = new Vue({
             console.log(this.validations.waterVolume);
         },
         _updater: function () {
-            var req = this.$http.get('/mock.json');
+            var req = this.$http.get('/test.json');
             req.then(
                 function (res) {
                     if (['settings'].indexOf(this.view.active) == -1) {

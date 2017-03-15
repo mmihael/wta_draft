@@ -4,7 +4,7 @@ var json = {
     "ID": "EFA23B56",
     "Status": Math.ceil(Math.random() * 232353253),
     "WaterHardness": Math.ceil(Math.random() * 300),
-    "PH": (Math.random() * 14),
+    "PH": Math.ceil(Math.random() * 14),
     "Turbidity": Math.ceil(Math.random() * 5000),
     "WaterTemperature": 24.3,
     "WaterColor": "FB3456",
@@ -30,3 +30,5 @@ var loop = function () {
     fs.writeFile('test.json', JSON.stringify(json));
     setTimeout(loop, 3000);
 };
+
+loop();
