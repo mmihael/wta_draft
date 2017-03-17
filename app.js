@@ -1,7 +1,14 @@
 var userLang = navigator.language || navigator.userLanguage;
-
+// French, German, English (default), Italian, Spanish, Thailandese, Russian, Arab
 var translations = {
-   'en-us': {
+    'fr': {},
+    'de': {},
+    'it': {},
+    'es': {},
+    'ru': {},
+    'ar': {},
+    'th': {},
+    'en': {
         'App name': 'App name',
         'Back': 'Back',
         'Water properties': 'Water properties',
@@ -38,26 +45,7 @@ var translations = {
         'Electrolysis cycle status': 'Electrolysis cycle status',
         'Trial license expired': 'Trial license expired',
         'Trial license days left': 'Trial license days left',
-   }
-//   ,
-//   'hr': {
-//        'App name': 'App name',
-//        'Back': 'Nazad',
-//        'Water properties': 'Svojstva vode',
-//        'Electrodes': 'Elektrode',
-//        'Settings': 'Postavke',
-//        'Water Hardness': 'Tvrdoća vode',
-//        'Copper Level': 'Razina bakra',
-//        'Turbidity': 'Turbidity',
-//        'PH': 'PH',
-//        'Water Temperature': 'Temperatura vode',
-//        'Water Flow': 'Protok vode',
-//        'Water Color': 'Boja vode',
-//        'Identification name': 'Identifikacisko ime',
-//        'Water Volume': 'Volumen vode',
-//        'Station SSID': 'SSID Stanice',
-//        'Station password': 'Šifra stanice',
-//    }
+    }
 };
 
 var progress = Vue.component('gauge', {
@@ -65,9 +53,22 @@ var progress = Vue.component('gauge', {
     props: {
         'value': { type: Number, default: 0 },
         'max': { type: Number, default: 100 },
-        'isph': {type: Boolean, default: false }
+        'isph': {type: Boolean, default: false },
+        'display': {type: String, default: null }
     },
     methods: {
+        customDisplay: function () {
+            if (this.display === '%') {
+                var value = ((this.value / this.max) * 100).toFixed(2).toString();
+                while (value.length > 1 && value[value.length - 1] === '0') {
+                    value = value.substr(0, value.length - 1);
+                }
+                if (value.length > 0 && value[value.length - 1] === '.') {
+                    value = value.substr(0, value.length - 1);
+                }
+                return value + '%';
+            }
+        },
         size: function () { return (this.value / this.max) * 100; },
         color: function () {
             if (this.isph) { return ''; }
@@ -123,15 +124,27 @@ var app = new Vue({
                     if (['settings'].indexOf(this.view.active) == -1) {
                         this.status = res.body;
                         if (this.status.OnTime != null) {
-                            var date = new Date();
-                            date.setTime(this.status.OnTime * 1000);
-                            this.onTimeDisplayString = date.toUTCString();
-                            var tillOnTime = date - new Date();
-                            if (tillOnTime > 0) {
-                                var daysleft = Math.ceil(tillOnTime / 86400000);
-                                this.key1daysLeft = daysleft - 30;
-                                this.key2daysLeft = daysleft - 60;
-                                this.key3daysLeft = daysleft - 90;
+                            var onTimeToTime = function (seconds) {
+                                var numdays = Math.floor(seconds / 86400);
+                                var numhours = Math.floor((seconds % 86400) / 3600);
+                                var numminutes = Math.floor(((seconds % 86400) % 3600) / 60);
+                                var numseconds = ((seconds % 86400) % 3600) % 60;
+
+                                if (numdays>0) sdays = "days"; else sdays = "day";
+                                if (numhours>0) shours = "hours"; else shours = "hour";
+                                if (numminutes>0) sminutes = "minutes"; else sminutes = "minute";
+
+                                return {
+                                    onTimeDisplayString: numdays + " " + sdays + ", " + numhours + " " + shours + ", " + numminutes + " " + sminutes + ", " + numseconds + " " + "s",
+                                    numdays: numdays
+                                };
+                            };
+                            var timeLeft = onTimeToTime(this.status.OnTime);
+                            this.onTimeDisplayString = timeLeft.onTimeDisplayString;
+                            if (timeLeft.numdays > 0) {
+                                this.key1daysLeft = timeLeft.numdays - 30;
+                                this.key2daysLeft = timeLeft.numdays - 60;
+                                this.key3daysLeft = timeLeft.numdays - 90;
                             } else {
                                 this.key1daysLeft = 0;
                                 this.key2daysLeft = 0;
@@ -141,7 +154,6 @@ var app = new Vue({
                         this.sleepMode = this._statusBitOn(18);
                         this.electrolysisCycleStatus = this._statusBitOn(19);
                     }
-                    console.log(res);
                     setTimeout(this._updater, this.updaterInterval);
                 }.bind(this),
                 function (res) { setTimeout(this._updater, this.updaterInterval); console.log(res); }.bind(this)
@@ -176,10 +188,10 @@ var app = new Vue({
         lang: (
             userLang != null && Object.keys(translations).indexOf(userLang) != -1 ?
             translations[userLang.toLowerCase()] :
-            translations['en-us']
+            translations['en']
         ),
         languages: Object.keys(translations),
-        activeLanguage: 'en-us',
+        activeLanguage: 'en',
         updaterInterval: 5000
     }
 });

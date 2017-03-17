@@ -9,8 +9,14 @@
 <body>
     <div id="app">
         <div class="container">
+            <div v-if="view.active != 'home'" class="hidden-md hidden-lg" style="position: fixed; bottom: 10px; left: 5px; z-index: 100;">
+                <button  v-on:click="view.active = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+            </div>
             <br>
             <div class="text-right">
+                <label for="language-picker">
+                    <img v-bind:src="'/' + activeLanguage + '.svg'" style="width: 40px; height: 100%" alt="flag">
+                </label>
                 <select v-model="activeLanguage" v-on:change="_changeLanguage()" name="language-picker" id="language-picker">
                     <option v-for="language in languages" v-bind:value="language">{{ language }}</option>
                 </select>
@@ -18,6 +24,30 @@
             <br>
             <transition name="fade" mode="out-in">
                 <div v-if="view.active === 'home'" class="row" key="home">
+                    <div class="col-sm-4 text-info"><strong>{{ lang['On Time'] }}:</strong> {{ onTimeDisplayString }}</div>
+                    <div class="col-sm-4">
+                        <div style="display: inline-block; vertical-align: top; padding-top: 4px;">
+                            <label>{{ lang['Sleep mode'] }}:</label>
+                        </div>
+                        <div style="display: inline-block;">
+                            <div v-bind:style="sleepMode ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                                <span v-bind:style="sleepMode ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4"></div>
+                    <div class="clearfix"></div>
+                    <br>
+                    <div class="col-xs-12 col-md-4">
+                        <button v-on:click="view.active = 'waterProperties'" type="button" class="btn btn-info home-option">{{ lang['Water properties'] }}</button>
+                    </div>
+                    <div class="col-xs-12 col-md-4">
+                        <button v-on:click="view.active = 'electrodes'" type="button" class="btn btn-info home-option">{{ lang['Electrodes'] }}</button>
+                    </div>
+                    <div class="col-xs-12 col-md-4">
+                        <button v-on:click="view.active = 'settings'" type="button" class="btn btn-info home-option">{{ lang['Settings'] }}</button>
+                    </div>
+                    <div class="clearfix"></div>
                     <div class="col-xs-12 col-md-12">
                         <div class="alert alert-info">
                             <strong>{{ status.MessageString }}</strong>
@@ -30,28 +60,6 @@
                             <div v-if="_statusBitOn(12)" class="text-info"><strong>{{ lang['The PH probe is not calibrated'] }}</strong></div>
                         </div>
                     </div>
-                    <div class="col-xs-12 col-md-4">
-                        <button v-on:click="view.active = 'waterProperties'" type="button" class="btn btn-info home-option">{{ lang['Water properties'] }}</button>
-                    </div>
-                    <div class="col-xs-12 col-md-4">
-                        <button v-on:click="view.active = 'electrodes'" type="button" class="btn btn-info home-option">{{ lang['Electrodes'] }}</button>
-                    </div>
-                    <div class="col-xs-12 col-md-4">
-                        <button v-on:click="view.active = 'settings'" type="button" class="btn btn-info home-option">{{ lang['Settings'] }}</button>
-                    </div>
-                    <div class="clearfix"></div>
-                    <div class="col-md-12 text-info"><strong>{{ lang['On Time'] }}:</strong> {{ onTimeDisplayString }}</div>
-                    <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Sleep mode'] }}:</label>
-                        <div v-bind:style="sleepMode ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
-                            <span v-bind:style="sleepMode ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
-                        </div>
-                    </div>
-                    <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Electrolysis cycle status'] }}:</label>
-                        <div v-bind:style="electrolysisCycleStatus ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
-                            <span v-bind:style="electrolysisCycleStatus ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
-                        </div>
-                    </div>
-                    <div class="col-xs-12 col-md-4"></div>
                 </div>
                 <div v-if="view.active === 'waterProperties'" class="row" key="waterProperties">
                     <div class="col-md-4"></div>
@@ -152,25 +160,12 @@
                     <div class="col-md-4"></div>
                     <div class="clearfix"></div>
 
-                    <!--<div class="col-md-4"></div>-->
-                    <!--<div class="col-md-4">-->
-                        <!--<div class="form-group">-->
-                            <!--<label for="ContainerMLCapacity">{{ lang['Container Capacity'] }}</label>-->
-                            <!--<div class="input-group">-->
-                                <!--<input v-model="status.ContainerMLCapacity" type="text" disabled class="form-control" id="ContainerMLCapacity">-->
-                                <!--<span class="input-group-addon">ml</span>-->
-                            <!--</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                    <!--<div class="col-md-4"></div>-->
-                    <!--<div class="clearfix"></div>-->
-
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>{{ lang['Container CU Level'] }}</label>
                             <div class="input-group">
-                                <gauge v-bind:value="status.ContainerCuLevel" v-bind:max="status.ContainerMLCapacity"></gauge>
+                                <gauge v-bind:value="status.ContainerCuLevel" display="%" v-bind:max="status.ContainerMLCapacity"></gauge>
                                 <span class="input-group-addon">ppm</span>
                             </div>
                         </div>
@@ -178,18 +173,14 @@
                     <div class="col-md-4"></div>
                     <div class="clearfix"></div>
 
-                    <!--<div class="col-md-4"></div>-->
-                    <!--<div class="col-md-4">-->
-                        <!--<div class="form-group">-->
-                            <!--<label>{{ lang['Copper Electrode Mass'] }}</label>-->
-                            <!--<div class="input-group">-->
-                                <!--<input v-model="status.CopperElectrodeMass" type="text" disabled class="form-control">-->
-                                <!--<span class="input-group-addon">g</span>-->
-                            <!--</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                    <!--<div class="col-md-4"></div>-->
-                    <!--<div class="clearfix"></div>-->
+                    <div class="col-md-4"></div>
+                    <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Electrolysis cycle status'] }}:</label>
+                        <div v-bind:style="electrolysisCycleStatus ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                            <span v-bind:style="electrolysisCycleStatus ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="clearfix"></div>
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
@@ -315,7 +306,7 @@
         <div v-bind:class="isph ? 'ph' : ''" style="width: 100%; height: 32px; border: 1px solid #cccccc; border-radius: 3px 0 0 3px; background-color: white;">
             <div v-bind:class="isph ? 'text-right' : 'text-center'" v-bind="{ style: { width: size() + '%', 'background-color': color()  } }"
                  style="height: 100%; transition: width 1s ease-out; padding: 4px 0 0 0;">
-                <span v-bind:class="isph ? 'ph-text' : ''">{{ value }}</span>
+                <span v-bind:class="isph ? 'ph-text' : ''">{{ display != null ? customDisplay(value) : value }}</span>
             </div>
         </div>
     </div>
