@@ -117,7 +117,7 @@ var app = new Vue({
             console.log(this.validations.waterVolume);
         },
         _updater: function () {
-            var req = this.$http.get('/test.json');
+            var req = this.$http.get('/mock.json');
             req.then(
                 function (res) {
                     if (['settings'].indexOf(this.view.active) == -1) {
@@ -180,6 +180,6 @@ var app = new Vue({
         ),
         languages: Object.keys(translations),
         activeLanguage: 'en-us',
-        updaterInterval: 1000
+        updaterInterval: 5000
     }
 });
