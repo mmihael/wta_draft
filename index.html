@@ -14,9 +14,7 @@
             </div>
             <br>
             <div class="text-right">
-                <label for="language-picker">
-                    <img v-bind:src="'/' + activeLanguage + '.svg'" style="width: 40px; height: 100%" alt="flag">
-                </label>
+                <img v-bind:src="'/' + activeLanguage + '.svg'" style="width: 40px; height: 40px" alt="flag">
                 <select v-model="activeLanguage" v-on:change="_changeLanguage()" name="language-picker" id="language-picker">
                     <option v-for="language in languages" v-bind:value="language">{{ language }}</option>
                 </select>
@@ -314,4 +312,4 @@
     <script src="/vue-resource.min.js"></script>
     <script src="/app.js"></script>
 </body>
-</html>                                   
+</html>                                                                                        

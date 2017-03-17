@@ -164,7 +164,7 @@ var app = new Vue({
         },
         _statusBitOn: function (position) {
             return (this.status.Status & Math.pow(2, position)) > 0;
-        },
+        }
     },
 
     data: {
