@@ -1,6 +1,6 @@
 var config = {
-    getUrl: '/mock.json',
-    postUrl: '/mock.json'
+    getUrl: 'http://localhost:11111/mock.json',
+    postUrl: 'http://localhost:11111/post.json'
 };
 
 var userLang = navigator.language || navigator.userLanguage;
@@ -137,7 +137,7 @@ var app = new Vue({
 
             if (switchClick != false) {
                 switchClick = parseInt(switchClick);
-                var mask = 1 < switchClick;
+                var mask = 1 << switchClick;
                 reqBody.Status = reqBody.Status ^ mask;
             }
 
