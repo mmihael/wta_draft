@@ -3463,3 +3463,12 @@ label {
     font-weight: bold;
     padding: 6px 3px 8px 3px;
 }
+
+.lang-li {
+    cursor: pointer;
+    padding: 0 0 0 4px;
+}
+
+.lang-li:hover {
+    background-color: #e6e6e6;
+}

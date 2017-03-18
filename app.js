@@ -1,15 +1,12 @@
+var config = {
+    getUrl: '/mock.json',
+    postUrl: '/mock.json'
+};
+
 var userLang = navigator.language || navigator.userLanguage;
-// French, German, English (default), Italian, Spanish, Thailandese, Russian, Arab
+
 var translations = {
-    'fr': {},
-    'de': {},
-    'it': {},
-    'es': {},
-    'ru': {},
-    'ar': {},
-    'th': {},
     'en': {
-        'App name': 'App name',
         'Back': 'Back',
         'Water properties': 'Water properties',
         'Electrodes': 'Electrodes',
@@ -45,8 +42,38 @@ var translations = {
         'Electrolysis cycle status': 'Electrolysis cycle status',
         'Trial license expired': 'Trial license expired',
         'Trial license days left': 'Trial license days left',
-    }
+    },
+    'fr': {},
+    'de': {},
+    'it': {},
+    'es': {},
+    'ru': {},
+    'ar': {},
+    'th': {}
 };
+
+var translationKeys = Object.keys(translations.en);
+var languageKeys = Object.keys(translations);
+var selectedLanguage = 'en';
+
+for (var j = 0; languageKeys.length > j; j++) {
+    if (languageKeys[j] === 'en') { continue; }
+    for (var i = 0; translationKeys.length > i; i++) {
+        if (translations[languageKeys[j]][translationKeys[i]] == null) {
+            translations[languageKeys[j]][translationKeys[i]] = translations.en[translationKeys[i]];
+        }
+    }
+}
+
+if (userLang != null) {
+    userLang = userLang.toLowerCase();
+    if (userLang.length > 2) {
+        userLan = userLang.substr(2);
+        if (languageKeys.indexOf(userLang) != -1) {
+            selectedLanguage = userLang;
+        }
+    }
+}
 
 var progress = Vue.component('gauge', {
     template: document.getElementById('gauge').innerHTML,
@@ -87,14 +114,43 @@ var progress = Vue.component('gauge', {
 var app = new Vue({
     el: '#app',
     mounted: function () {
-        this._updater();
+        this._updater(false);
     },
-
     methods: {
-        _submit: function () { alert("TO-DO"); },
+        _submit: function (switchClick) {
+            var validationKeys = Object.keys(this.validations);
+            for (var i = 0; validationKeys.length > i; i++) {
+                if (this.validations[validationKeys[i]] !== '') {
+                    return;
+                }
+            }
+            var reqBody = {
+                Status: parseInt(this.status.Status),
+                ApplianceName: this.status.ApplianceName,
+                WaterVolume: parseInt(this.status.WaterVolume),
+                Key1: this.status.Key1,
+                Key2: this.status.Key2,
+                Key3: this.status.Key3,
+                StationSSID: this.status.StationSSID,
+                StationPwd: this.status.StationPwd
+            };
+
+            if (switchClick != false) {
+                switchClick = parseInt(switchClick);
+                var mask = 1 < switchClick;
+                reqBody.Status = reqBody.Status ^ mask;
+            }
+
+            var req = this.$http.post(config.postUrl, reqBody, { headers: { 'Content-Type': 'application/json' } });
+            req.then(function (res) {
+                this._updater(true);
+            }.bind(this), function (res) {
+                this._updater(true);
+            }.bind(this));
+        },
+        _globalClick: function () { this.langToggled = false; },
         _validateHexKey: function (keyName) {
             var regexVal = /^[abcdef0-9]{8}$/i;
-            console.log(this.status[keyName]);
             if (!regexVal.test(this.status[keyName])) {
                 this.validations[keyName] = this.lang['Key must be HEX number between 00 00 00 00 and FF FF FF FF'];
             } else {
@@ -115,13 +171,12 @@ var app = new Vue({
             } else {
                 this.validations.WaterVolume = '';
             }
-            console.log(this.validations.waterVolume);
         },
-        _updater: function () {
-            var req = this.$http.get('/mock.json');
+        _updater: function (forceOneUpdate) {
+            var req = this.$http.get(config.getUrl);
             req.then(
                 function (res) {
-                    if (['settings'].indexOf(this.view.active) == -1) {
+                    if (forceOneUpdate || ['settings'].indexOf(this.view.active) == -1) {
                         this.status = res.body;
                         if (this.status.OnTime != null) {
                             var onTimeToTime = function (seconds) {
@@ -156,21 +211,20 @@ var app = new Vue({
                     }
                     setTimeout(this._updater, this.updaterInterval);
                 }.bind(this),
-                function (res) { setTimeout(this._updater, this.updaterInterval); console.log(res); }.bind(this)
+                function (res) { setTimeout(this._updater, this.updaterInterval); }.bind(this)
             );
         },
-        _changeLanguage: function () {
+        _changeLanguage: function (language) {
+            this.activeLanguage = language;
             this.lang = translations[this.activeLanguage.toLowerCase()];
+            this.langToggled = false;
         },
         _statusBitOn: function (position) {
             return (this.status.Status & Math.pow(2, position)) > 0;
         }
     },
-
     data: {
-        view: {
-            active: 'home'
-        },
+        view: { active: 'home' },
         onTimeDisplayString: '',
         sleepMode: null,
         electrolysisCycleStatus: null,
@@ -185,13 +239,10 @@ var app = new Vue({
             Key2: '',
             Key3: ''
         },
-        lang: (
-            userLang != null && Object.keys(translations).indexOf(userLang) != -1 ?
-            translations[userLang.toLowerCase()] :
-            translations['en']
-        ),
-        languages: Object.keys(translations),
-        activeLanguage: 'en',
+        langToggled: false,
+        lang: translations[selectedLanguage],
+        languages: languageKeys,
+        activeLanguage: selectedLanguage,
         updaterInterval: 5000
     }
 });

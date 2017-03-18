@@ -13,11 +13,25 @@
                 <button  v-on:click="view.active = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
             </div>
             <br>
-            <div class="text-right">
-                <img v-bind:src="'/' + activeLanguage + '.svg'" style="width: 40px; height: 40px" alt="flag">
-                <select v-model="activeLanguage" v-on:change="_changeLanguage()" name="language-picker" id="language-picker">
-                    <option v-for="language in languages" v-bind:value="language">{{ language }}</option>
-                </select>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="dropdown pull-right">
+                        <button type="button" class="btn btn-default" v-on:click="langToggled = !langToggled" style="cursor: pointer; padding: 0 4px 0 4px;">
+                            <img v-bind:src="'/' + activeLanguage + '.svg'" style="width: 40px; height: 40px" alt="flag">
+                            {{ activeLanguage }}
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" :style="langToggled ? 'display: block' : ''">
+                            <li v-for="language in languages" v-on:click="_changeLanguage(language)" class="lang-li">
+                                <img v-bind:src="'/' + language + '.svg'" style="width: 40px; height: 40px" alt="flag">
+                                {{ language }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!--<select v-model="activeLanguage" v-on:change="_changeLanguage()" name="language-picker" id="language-picker">-->
+                    <!--<option v-for="language in languages" v-bind:value="language">{{ language }}</option>-->
+                <!--</select>-->
             </div>
             <br>
             <transition name="fade" mode="out-in">
@@ -28,7 +42,7 @@
                             <label>{{ lang['Sleep mode'] }}:</label>
                         </div>
                         <div style="display: inline-block;">
-                            <div v-bind:style="sleepMode ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                            <div v-on:click="_submit(18)" v-bind:style="sleepMode ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
                                 <span v-bind:style="sleepMode ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
                             </div>
                         </div>
@@ -173,7 +187,7 @@
 
                     <div class="col-md-4"></div>
                     <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Electrolysis cycle status'] }}:</label>
-                        <div v-bind:style="electrolysisCycleStatus ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                        <div v-on:click="_submit(19)" v-bind:style="electrolysisCycleStatus ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
                             <span v-bind:style="electrolysisCycleStatus ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
                         </div>
                     </div>
@@ -197,14 +211,24 @@
                     <div class="col-md-4"></div>
                     <div class="clearfix"></div>
 
-                    <form v-on:submit.prevent="_submit()">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <div class="text-danger">{{ validations.ApplianceName }}</div>
+                            <label for="ApplianceName">{{ lang['Appliance Name'] }}</label>
+                            <input v-on:change="_submit(false)" v-on:input="_validateApplianceName()" v-model="status.ApplianceName" type="text" class="form-control" id="ApplianceName">
+                        </div>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="clearfix"></div>
+
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <div class="text-danger">{{ validations.WaterVolume }}</div>
                             <label for="WaterVolume">{{ lang['Water Volume'] }}</label>
                             <div class="input-group">
-                                <input v-on:input="_validateVolume()" v-model="status.WaterVolume" type="number" class="form-control" id="WaterVolume">
+                                <input v-on:change="_submit(false)" v-on:input="_validateVolume()" v-model="status.WaterVolume" type="number" class="form-control" id="WaterVolume">
                                 <span class="input-group-addon">m<sup>3</sup></span>
                             </div>
                         </div>
@@ -215,20 +239,9 @@
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <div class="text-danger">{{ validations.ApplianceName }}</div>
-                            <label for="ApplianceName">{{ lang['Appliance Name'] }}</label>
-                            <input v-on:input="_validateApplianceName()" v-model="status.ApplianceName" type="text" class="form-control" id="ApplianceName">
-                        </div>
-                    </div>
-                    <div class="col-md-4"></div>
-                    <div class="clearfix"></div>
-
-                    <div class="col-md-4"></div>
-                    <div class="col-md-4">
-                        <div class="form-group">
                             <div class="text-danger">{{ validations.Key1 }}</div>
                             <label for="Key1">Key #1</label>
-                            <input v-on:input="_validateHexKey('Key1')" v-bind="{ disabled: _statusBitOn(15), style: { 'color': _statusBitOn(15) ? 'green' : '', 'font-weight': _statusBitOn(15) ? 'bold' : '' } }" v-model="status.Key1" type="text" class="form-control" id="Key1">
+                            <input v-on:change="_submit(false)" v-on:input="_validateHexKey('Key1')" v-bind="{ disabled: _statusBitOn(15), style: { 'color': _statusBitOn(15) ? 'green' : '', 'font-weight': _statusBitOn(15) ? 'bold' : '' } }" v-model="status.Key1" type="text" class="form-control" id="Key1">
                             <strong v-if="!_statusBitOn(15)" class="text-info">
                                 <span v-if="key1daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key1daysLeft }}</span>
                                 <span v-else>{{ lang['Trial license expired'] }}</span>
@@ -243,7 +256,7 @@
                         <div class="form-group">
                             <div class="text-danger">{{ validations.Key2 }}</div>
                             <label for="Key2">Key #2</label>
-                            <input v-on:input="_validateHexKey('Key2')" v-bind="{ disabled: _statusBitOn(16), style: { 'color': _statusBitOn(16) ? 'green' : '', 'font-weight': _statusBitOn(16) ? 'bold' : '' } }" v-model="status.Key2" type="text" class="form-control" id="Key2">
+                            <input v-on:change="_submit(false)" v-on:input="_validateHexKey('Key2')" v-bind="{ disabled: _statusBitOn(16), style: { 'color': _statusBitOn(16) ? 'green' : '', 'font-weight': _statusBitOn(16) ? 'bold' : '' } }" v-model="status.Key2" type="text" class="form-control" id="Key2">
                             <strong v-if="!_statusBitOn(16)" class="text-info">
                                 <span v-if="key2daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key2daysLeft }}</span>
                                 <span v-else>{{ lang['Trial license expired'] }}</span>
@@ -258,7 +271,7 @@
                         <div class="form-group">
                             <div class="text-danger">{{ validations.Key3 }}</div>
                             <label for="Key1">Key #3</label>
-                            <input v-on:input="_validateHexKey('Key3')" v-bind="{ disabled: _statusBitOn(17), style: { 'color': _statusBitOn(17) ? 'green' : '', 'font-weight': _statusBitOn(17) ? 'bold' : '' } }" v-model="status.Key3" type="text" class="form-control" id="Key3">
+                            <input v-on:change="_submit(false)" v-on:input="_validateHexKey('Key3')" v-bind="{ disabled: _statusBitOn(17), style: { 'color': _statusBitOn(17) ? 'green' : '', 'font-weight': _statusBitOn(17) ? 'bold' : '' } }" v-model="status.Key3" type="text" class="form-control" id="Key3">
                             <strong v-if="!_statusBitOn(17)" class="text-info">
                                 <span v-if="key3daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key3daysLeft }}</span>
                                 <span v-else>{{ lang['Trial license expired'] }}</span>
@@ -272,7 +285,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="StationSSID">{{ lang['Station SSID'] }}</label>
-                            <input maxlength="64" v-model="status.StationSSID" type="text" class="form-control" id="StationSSID">
+                            <input v-on:change="_submit(false)" maxlength="64" v-model="status.StationSSID" type="text" class="form-control" id="StationSSID">
                         </div>
                     </div>
                     <div class="col-md-4"></div>
@@ -282,7 +295,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="StationPwd">{{ lang['Station password'] }}</label>
-                            <input maxlength="64" v-model="status.StationPwd" type="text" class="form-control" id="StationPwd">
+                            <input v-on:change="_submit(false)" maxlength="64" v-model="status.StationPwd" type="text" class="form-control" id="StationPwd">
                         </div>
                     </div>
                     <div class="col-md-4"></div>
@@ -293,7 +306,7 @@
                         <button  v-on:click="view.active = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
                     </div>
                     <div class="col-md-4"></div>
-                    </form>
+
                 </div>
             </transition>
         </div>
