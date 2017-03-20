@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>WTA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div id="app">
+    <div class="container">
+        <div v-if="view != 'home'" class="hidden-md hidden-lg" style="position: fixed; bottom: 10px; left: 5px; z-index: 100;">
+            <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="dropdown pull-right">
+                    <button type="button" class="btn btn-default" v-on:click="langToggled = !langToggled" style="cursor: pointer; padding: 0 4px 0 4px;">
+                        <img v-bind:src="'/' + activeLanguage + '.svg'" style="width: 40px; height: 40px" alt="flag">
+                        {{ activeLanguage }}
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" :style="langToggled ? 'display: block' : ''">
+                        <li v-for="language in languages" v-on:click="_changeLanguage(language)" class="lang-li">
+                            <img v-bind:src="'/' + language + '.svg'" style="width: 40px; height: 40px" alt="flag">
+                            {{ language }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <br>
+        <transition name="fade" mode="out-in">
+            <div v-if="view === 'home'" class="row" key="home">
+                <div class="col-sm-4 text-info"><strong>{{ lang['On Time'] }}:</strong> {{ onTimeDisplayString }}</div>
+                <div class="col-sm-4">
+                    <div style="display: inline-block; vertical-align: top; padding-top: 4px;">
+                        <label>{{ lang['Sleep mode'] }}:</label>
+                    </div>
+                    <div style="display: inline-block;">
+                        <div v-on:click="_submit(18)" v-bind:style="sleepMode ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                            <span v-bind:style="sleepMode ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="clearfix"></div>
+                <br>
+                <div class="col-xs-12 col-md-4">
+                    <button v-on:click="view = 'Water properties'" type="button" class="btn btn-info home-option">{{ lang['Water properties'] }}</button>
+                </div>
+                <div class="col-xs-12 col-md-4">
+                    <button v-on:click="view = 'Electrodes'" type="button" class="btn btn-info home-option">{{ lang['Electrodes'] }}</button>
+                </div>
+                <div class="col-xs-12 col-md-4">
+                    <button v-on:click="view = 'Settings'" type="button" class="btn btn-info home-option">{{ lang['Settings'] }}</button>
+                </div>
+                <div class="clearfix"></div>
+                <div class="col-xs-12 col-md-12">
+                    <div class="alert alert-info">
+                        <strong>{{ status.MessageString }}</strong>
+                        <div v-if="!_statusBitOn(0)" class="text-danger"><strong>{{ lang['The copper electrode needs to be replaced'] }}</strong></div>
+                        <div v-if="_statusBitOn(1)" class="text-danger"><strong>{{ lang['Short circuit detected on the Titanium electrode'] }}</strong></div>
+                        <div v-if="_statusBitOn(2)" class="text-danger"><strong>{{ lang['Short circuit detected on the Copper electrode'] }}</strong></div>
+                        <div v-if="!_statusBitOn(3)" class="text-danger"><strong>{{ lang['No water detected'] }}</strong></div>
+                        <div v-if="!_statusBitOn(4)" class="text-danger"><strong>{{ lang['No PH probe is attached'] }}</strong></div>
+                        <div v-if="_statusBitOn(11)" class="text-info"><strong>{{ lang['The PH probe has been calibrated'] }}</strong></div>
+                        <div v-if="_statusBitOn(12)" class="text-info"><strong>{{ lang['The PH probe is not calibrated'] }}</strong></div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="view === 'Water properties'" class="row" key="Water properties">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>{{ lang['Water Hardness'] }}</label>
+                        <div class="input-group">
+                            <gauge v-bind:value="status.WaterHardness" max="300"></gauge>
+                            <!--<input v-model="status.WaterHardness" type="text" disabled class="form-control" id="WaterHardness">-->
+                            <span class="input-group-addon">ppm</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>{{ lang['Turbidity'] }}</label>
+                        <div class="input-group">
+                            <gauge v-bind:value="status.Turbidity" max="5000" id="Turbidity"></gauge>
+                            <span class="input-group-addon">NTU</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>{{ lang['PH'] }}</label>
+                        <div class="input-group">
+                            <gauge isph="true" v-bind:value="status.PH" max="14"></gauge>
+                            <span class="input-group-addon">PH</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="WaterTemperature">{{ lang['Water Temperature'] }}</label>
+                        <div class="input-group">
+                            <input v-model="status.WaterTemperature" type="text" disabled class="form-control" id="WaterTemperature">
+                            <span class="input-group-addon">deg</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="WaterFlow">{{ lang['Water Flow'] }}</label>
+                        <div class="input-group">
+                            <input v-model="status.WaterFlow" type="text" disabled class="form-control" id="WaterFlow">
+                            <span class="input-group-addon">L/mn</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="WaterColor">{{ lang['Water Color'] }}</label>
+                        <input disabled type="text" v-bind:style="'background-color: #' + status.WaterColor" class="form-control" id="WaterColor">
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4 text-right">
+                    <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+            <div v-if="view === 'Electrodes'" class="row" key="Electrodes">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="CopperReleased">{{ lang['Copper Released'] }}</label>
+                        <div class="input-group">
+                            <input v-model="status.CopperReleased" type="text" disabled class="form-control" id="CopperReleased">
+                            <span class="input-group-addon">g</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>{{ lang['Container CU Level'] }}</label>
+                        <div class="input-group">
+                            <gauge v-bind:value="status.ContainerCuLevel" display="%" v-bind:max="status.ContainerMLCapacity"></gauge>
+                            <span class="input-group-addon">ppm</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Electrolysis cycle status'] }}:</label>
+                    <div v-on:click="_submit(19)" v-bind:style="electrolysisCycleStatus ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                        <span v-bind:style="electrolysisCycleStatus ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4 text-right">
+                    <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+            <div v-if="view === 'Settings'" class="row" key="Settings">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <label>{{ lang['Identification name'] }}</label>
+                    <br><span>{{ status.ID }}</span>
+                    <br>
+                    <br>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="text-danger">{{ validations.ApplianceName }}</div>
+                        <label for="ApplianceName">{{ lang['Appliance Name'] }}</label>
+                        <input v-on:change="_submit(false)" v-on:input="_validateApplianceName()" v-model="status.ApplianceName" type="text" class="form-control" id="ApplianceName">
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="text-danger">{{ validations.WaterVolume }}</div>
+                        <label for="WaterVolume">{{ lang['Water Volume'] }}</label>
+                        <div class="input-group">
+                            <input v-on:change="_submit(false)" v-on:input="_validateVolume()" v-model="status.WaterVolume" type="number" class="form-control" id="WaterVolume">
+                            <span class="input-group-addon">m<sup>3</sup></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="text-danger">{{ validations.Key1 }}</div>
+                        <label for="Key1">Key #1</label>
+                        <input v-on:change="_submit(false)" v-on:input="_validateHexKey('Key1')" v-bind="{ disabled: _statusBitOn(15), style: { 'color': _statusBitOn(15) ? 'green' : '', 'font-weight': _statusBitOn(15) ? 'bold' : '' } }" v-model="status.Key1" type="text" class="form-control" id="Key1">
+                        <strong v-if="!_statusBitOn(15)" class="text-info">
+                            <span v-if="key1daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key1daysLeft }}</span>
+                            <span v-else>{{ lang['Trial license expired'] }}</span>
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="text-danger">{{ validations.Key2 }}</div>
+                        <label for="Key2">Key #2</label>
+                        <input v-on:change="_submit(false)" v-on:input="_validateHexKey('Key2')" v-bind="{ disabled: _statusBitOn(16), style: { 'color': _statusBitOn(16) ? 'green' : '', 'font-weight': _statusBitOn(16) ? 'bold' : '' } }" v-model="status.Key2" type="text" class="form-control" id="Key2">
+                        <strong v-if="!_statusBitOn(16)" class="text-info">
+                            <span v-if="key2daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key2daysLeft }}</span>
+                            <span v-else>{{ lang['Trial license expired'] }}</span>
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4 text-info"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <div class="text-danger">{{ validations.Key3 }}</div>
+                        <label for="Key1">Key #3</label>
+                        <input v-on:change="_submit(false)" v-on:input="_validateHexKey('Key3')" v-bind="{ disabled: _statusBitOn(17), style: { 'color': _statusBitOn(17) ? 'green' : '', 'font-weight': _statusBitOn(17) ? 'bold' : '' } }" v-model="status.Key3" type="text" class="form-control" id="Key3">
+                        <strong v-if="!_statusBitOn(17)" class="text-info">
+                            <span v-if="key3daysLeft > 0">{{ lang['Trial license days left'] }}: {{ key3daysLeft }}</span>
+                            <span v-else>{{ lang['Trial license expired'] }}</span>
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4 text-info"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="StationSSID">{{ lang['Station SSID'] }}</label>
+                        <input v-on:change="_submit(false)" maxlength="64" v-model="status.StationSSID" type="text" class="form-control" id="StationSSID">
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="StationPwd">{{ lang['Station password'] }}</label>
+                        <input v-on:change="_submit(false)" maxlength="64" v-model="status.StationPwd" type="text" class="form-control" id="StationPwd">
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="clearfix"></div>
+
+                <div class="col-md-4"></div>
+                <div class="col-md-4 text-right">
+                    <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                </div>
+                <div class="col-md-4"></div>
+
+            </div>
+        </transition>
+    </div>
+</div>
+<br>
+<br>
+<div id="gauge" style="display: none;">
+    <div v-bind:class="isph ? 'ph' : ''" style="width: 100%; height: 32px; border: 1px solid #cccccc; border-radius: 3px 0 0 3px; background-color: white;">
+        <div v-bind:class="isph ? 'text-right' : 'text-center'" v-bind="{ style: { width: size() + '%', 'background-color': color()  } }"
+             style="height: 100%; transition: width 1s ease-out; padding: 4px 0 0 0;">
+            <span v-bind:class="isph ? 'ph-text' : ''">{{ display != null ? customDisplay(value) : value }}</span>
+        </div>
+    </div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

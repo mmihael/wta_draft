@@ -1,6 +1,6 @@
 var config = {
-    getUrl: 'http://localhost:11111/mock.json',
-    postUrl: 'http://localhost:11111/post.json'
+    getUrl: '/getdata',
+    postUrl: '/senddata'
 };
 
 var userLang = navigator.language || navigator.userLanguage;
@@ -43,7 +43,40 @@ var translations = {
         'Trial license expired': 'Trial license expired',
         'Trial license days left': 'Trial license days left',
     },
-    'fr': {},
+    'fr': {
+        'Back': 'Retour',
+        'Water properties': 'Propriétés de l’eau',
+        'Electrodes': 'Electrodes',
+        'Settings': 'Paramétres',
+        'Water Hardness': 'Duretée',
+        'Container CU Level': 'Niveau de test cuivre',
+        'Turbidity': 'Turbidité',
+        'PH': 'PH',
+        'Water Temperature': 'Température',
+        'Water Flow': 'Débit',
+        'Water Color': 'Couleur',
+        'Identification name': 'Identifiant',
+        'Water Volume': 'Volume d’eau',
+        'Station SSID': 'SSID du Wifi',
+        'Station password': 'Mot de passe du Wifi',
+        'Copper Released': 'Qté de suivre en suspension',
+        'Copper Electrode Mass': 'Masse de l’électrode cuivre',
+        'Water volume must be between 0 and 1000': 'Le volume d’eau doit être compris entre 0 et 1000',
+        'Appliance name must be between 1 and 10 alphanumeric characters': 'La longueur du nom ne peut dépasser 10 caractères',
+        'Appliance Name': 'Nom',
+        'Key must be HEX number between 00 00 00 00 and FF FF FF FF': 'LA clé doit être un nombre héxadécimal compris entre 00 00 00 00 et FF FF FF FF',
+        'The copper electrode needs to be replaced': 'L’électrode de cuivre doit être remplacée',
+        'Short circuit detected on the Titanium electrode': 'Court-circuit détecté sur l’électrode de Titanium', 'Short circuit detected on the Copper electrode': ' Court-circuit détecté sur l’électrode de cuivre',
+        'No water detected': 'Eau non détectée',
+        'No PH probe is attached': 'Aucune sonde de PH n’est présente',
+        'On Time': 'En service depuis',
+        'The PH probe has been calibrated': 'La sonde PH a été calibrée',
+        'The PH probe is not calibrated': 'La sonde PH n’est pas calibrée',
+        'Sleep mode': 'Mode veille',
+        'Electrolysis cycle status': 'Cycle d’électrolyse',
+        'License expired': 'La licence est expirée',
+        'Trial license days left': 'Durée d’expiration de la licence'
+    },
     'de': {},
     'it': {},
     'es': {},
@@ -55,6 +88,12 @@ var translations = {
 var translationKeys = Object.keys(translations.en);
 var languageKeys = Object.keys(translations);
 var selectedLanguage = 'en';
+if (typeof(Storage) != undefined && localStorage != undefined) {
+    var storageLang = localStorage.getItem('lang');
+    if (storageLang != null && languageKeys.indexOf(storageLang) != -1) {
+        selectedLanguage = storageLang;
+    }
+}
 
 for (var j = 0; languageKeys.length > j; j++) {
     if (languageKeys[j] === 'en') { continue; }
@@ -115,8 +154,17 @@ var app = new Vue({
     el: '#app',
     mounted: function () {
         this._updater(false);
+        this._setTitle();
+    },
+    watch: {
+        view: function (val) { this._setTitle(); }
     },
     methods: {
+        _setTitle: function () {
+            var title = this.lang[this.view];
+            if (title == null) { title = this.view; }
+            document.title = 'NewTS - ' + title.charAt(0).toUpperCase() + title.slice(1);
+        },
         _submit: function (switchClick) {
             var validationKeys = Object.keys(this.validations);
             for (var i = 0; validationKeys.length > i; i++) {
@@ -176,7 +224,7 @@ var app = new Vue({
             var req = this.$http.get(config.getUrl);
             req.then(
                 function (res) {
-                    if (forceOneUpdate || ['settings'].indexOf(this.view.active) == -1) {
+                    if (forceOneUpdate || ['settings'].indexOf(this.view) == -1) {
                         this.status = res.body;
                         if (this.status.OnTime != null) {
                             var onTimeToTime = function (seconds) {
@@ -218,13 +266,17 @@ var app = new Vue({
             this.activeLanguage = language;
             this.lang = translations[this.activeLanguage.toLowerCase()];
             this.langToggled = false;
+            if (typeof(Storage) != undefined && localStorage != undefined) {
+                localStorage.setItem('lang', language);
+            }
+            this._setTitle();
         },
         _statusBitOn: function (position) {
             return (this.status.Status & Math.pow(2, position)) > 0;
         }
     },
     data: {
-        view: { active: 'home' },
+        view: 'home',
         onTimeDisplayString: '',
         sleepMode: null,
         electrolysisCycleStatus: null,

@@ -9,8 +9,8 @@
 <body>
     <div id="app">
         <div class="container">
-            <div v-if="view.active != 'home'" class="hidden-md hidden-lg" style="position: fixed; bottom: 10px; left: 5px; z-index: 100;">
-                <button  v-on:click="view.active = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+            <div v-if="view != 'home'" class="hidden-md hidden-lg" style="position: fixed; bottom: 10px; left: 5px; z-index: 100;">
+                <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
             </div>
             <br>
             <div class="row">
@@ -35,7 +35,7 @@
             </div>
             <br>
             <transition name="fade" mode="out-in">
-                <div v-if="view.active === 'home'" class="row" key="home">
+                <div v-if="view === 'home'" class="row" key="home">
                     <div class="col-sm-4 text-info"><strong>{{ lang['On Time'] }}:</strong> {{ onTimeDisplayString }}</div>
                     <div class="col-sm-4">
                         <div style="display: inline-block; vertical-align: top; padding-top: 4px;">
@@ -51,13 +51,13 @@
                     <div class="clearfix"></div>
                     <br>
                     <div class="col-xs-12 col-md-4">
-                        <button v-on:click="view.active = 'waterProperties'" type="button" class="btn btn-info home-option">{{ lang['Water properties'] }}</button>
+                        <button v-on:click="view = 'Water properties'" type="button" class="btn btn-info home-option">{{ lang['Water properties'] }}</button>
                     </div>
                     <div class="col-xs-12 col-md-4">
-                        <button v-on:click="view.active = 'electrodes'" type="button" class="btn btn-info home-option">{{ lang['Electrodes'] }}</button>
+                        <button v-on:click="view = 'Electrodes'" type="button" class="btn btn-info home-option">{{ lang['Electrodes'] }}</button>
                     </div>
                     <div class="col-xs-12 col-md-4">
-                        <button v-on:click="view.active = 'settings'" type="button" class="btn btn-info home-option">{{ lang['Settings'] }}</button>
+                        <button v-on:click="view = 'Settings'" type="button" class="btn btn-info home-option">{{ lang['Settings'] }}</button>
                     </div>
                     <div class="clearfix"></div>
                     <div class="col-xs-12 col-md-12">
@@ -73,7 +73,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="view.active === 'waterProperties'" class="row" key="waterProperties">
+                <div v-if="view === 'Water properties'" class="row" key="Water properties">
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <div class="form-group">
@@ -154,11 +154,11 @@
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
-                        <button  v-on:click="view.active = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                        <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
                     </div>
                     <div class="col-md-4"></div>
                 </div>
-                <div v-if="view.active === 'electrodes'" class="row" key="waterProperties">
+                <div v-if="view === 'Electrodes'" class="row" key="Electrodes">
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <div class="form-group">
@@ -196,11 +196,11 @@
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
-                        <button  v-on:click="view.active = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                        <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
                     </div>
                     <div class="col-md-4"></div>
                 </div>
-                <div v-if="view.active === 'settings'" class="row" key="settings">
+                <div v-if="view === 'Settings'" class="row" key="Settings">
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <label>{{ lang['Identification name'] }}</label>
@@ -303,7 +303,7 @@
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
-                        <button  v-on:click="view.active = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                        <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
                     </div>
                     <div class="col-md-4"></div>
 
