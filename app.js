@@ -1,8 +1,10 @@
+// Config for api endpoints
 var config = {
     getUrl: '/getdata',
     postUrl: '/senddata'
 };
 
+// Auto detect user language
 var userLang = navigator.language || navigator.userLanguage;
 
 var translations = {
@@ -90,25 +92,14 @@ var translations = {
     'th': {}
 };
 
+// Extract all keys from default lang (used to auto fill untranslated words)
 var translationKeys = Object.keys(translations.en);
+// Get all language keys keys
 var languageKeys = Object.keys(translations);
+// Set default language
 var selectedLanguage = 'en';
-if (typeof(Storage) != undefined && localStorage != undefined) {
-    var storageLang = localStorage.getItem('lang');
-    if (storageLang != null && languageKeys.indexOf(storageLang) != -1) {
-        selectedLanguage = storageLang;
-    }
-}
 
-for (var j = 0; languageKeys.length > j; j++) {
-    if (languageKeys[j] === 'en') { continue; }
-    for (var i = 0; translationKeys.length > i; i++) {
-        if (translations[languageKeys[j]][translationKeys[i]] == null) {
-            translations[languageKeys[j]][translationKeys[i]] = translations.en[translationKeys[i]];
-        }
-    }
-}
-
+// If detected language is not null check if it exists in translations and select it
 if (userLang != null) {
     userLang = userLang.toLowerCase();
     if (userLang.length > 2) {
@@ -119,7 +110,28 @@ if (userLang != null) {
     }
 }
 
+// Check local storage for language chosen by user if key is valid apply
+// Language priority is (in same order): SAVED > DETECTED > DEFAULT
+if (typeof(Storage) != undefined && localStorage != undefined) {
+    var storageLang = localStorage.getItem('lang');
+    if (storageLang != null && languageKeys.indexOf(storageLang) != -1) {
+        selectedLanguage = storageLang;
+    }
+}
+
+// Fill untranslated keys
+for (var j = 0; languageKeys.length > j; j++) {
+    if (languageKeys[j] === 'en') { continue; }
+    for (var i = 0; translationKeys.length > i; i++) {
+        if (translations[languageKeys[j]][translationKeys[i]] == null) {
+            translations[languageKeys[j]][translationKeys[i]] = translations.en[translationKeys[i]];
+        }
+    }
+}
+
+// Gauge component
 var progress = Vue.component('gauge', {
+    // Load component html form dom
     template: document.getElementById('gauge').innerHTML,
     props: {
         'value': { type: Number, default: 0 },
@@ -128,6 +140,7 @@ var progress = Vue.component('gauge', {
         'display': {type: String, default: null }
     },
     methods: {
+        // Implement custom display of current value for gauge component
         customDisplay: function () {
             if (this.display === '%') {
                 var value = ((this.value / this.max) * 100).toFixed(2).toString();
@@ -140,7 +153,9 @@ var progress = Vue.component('gauge', {
                 return value + '%';
             }
         },
+        // Calculate percentage of gauge size indicator
         size: function () { return (this.value / this.max) * 100; },
+        // Calculate color for percentages (ignored for ph gauge)
         color: function () {
             if (this.isph) { return ''; }
             var index = Math.floor(this.size() / 25);
@@ -150,33 +165,42 @@ var progress = Vue.component('gauge', {
     },
     data: function () {
         return {
+            // Progress bar colors
             colors: ['#d9534f', '#fb9606', '#ecef34', '#5cb85c']
         };
     }
 });
 
+// Main component
 var app = new Vue({
     el: '#app',
     mounted: function () {
+        // On start initialize updater function that refreshes parameters in interval
         this._updater(false);
         this._setTitle();
     },
     watch: {
+        // Watch view variable and update title
         view: function (val) { this._setTitle(); }
     },
     methods: {
+        // Updates title depending on view variable
         _setTitle: function () {
             var title = this.lang[this.view];
             if (title == null) { title = this.view; }
             document.title = 'NewTS - ' + title.charAt(0).toUpperCase() + title.slice(1);
         },
+        // Used to submit editable data on change of value or click on switch component
+        // @var switchClick integer - bit to toggle
         _submit: function (switchClick) {
+            // Check if all fields are valid before submitting
             var validationKeys = Object.keys(this.validations);
             for (var i = 0; validationKeys.length > i; i++) {
                 if (this.validations[validationKeys[i]] !== '') {
                     return;
                 }
             }
+            // Setup request
             var reqBody = {
                 Status: parseInt(this.status.Status),
                 ApplianceName: this.status.ApplianceName,
@@ -187,13 +211,13 @@ var app = new Vue({
                 StationSSID: this.status.StationSSID,
                 StationPwd: this.status.StationPwd
             };
-
+            // If trigger is switch toggle corresponding status bit
             if (switchClick != false) {
                 switchClick = parseInt(switchClick);
                 var mask = 1 << switchClick;
                 reqBody.Status = reqBody.Status ^ mask;
             }
-
+            // Finally send request to server and update data
             var req = this.$http.post(config.postUrl, reqBody, { headers: { 'Content-Type': 'application/json' } });
             req.then(function (res) {
                 this._updater(true);
@@ -202,6 +226,7 @@ var app = new Vue({
             }.bind(this));
         },
         _globalClick: function () { this.langToggled = false; },
+        // Key validation
         _validateHexKey: function (keyName) {
             var regexVal = /^[abcdef0-9]{8}$/i;
             if (!regexVal.test(this.status[keyName])) {
@@ -210,6 +235,7 @@ var app = new Vue({
                 this.validations[keyName] = '';
             }
         },
+        // Appliance name validation
         _validateApplianceName: function () {
             var regexVal = /^[a-z0-9]{1,10}$/i;
             if (!regexVal.test(this.status.ApplianceName)) {
@@ -218,6 +244,7 @@ var app = new Vue({
                 this.validations.ApplianceName = '';
             }
         },
+        // Volume validation
         _validateVolume: function () {
             if (this.status.WaterVolume < 0 || this.status.WaterVolume > 1000) {
                 this.validations.WaterVolume = this.lang['Water volume must be between 0 and 1000'];
@@ -225,12 +252,16 @@ var app = new Vue({
                 this.validations.WaterVolume = '';
             }
         },
+        // Status updater which sends /getdata request to server in interval
+        // @var forceOneUpdate boolean - force update if user is on settings view
         _updater: function (forceOneUpdate) {
             var req = this.$http.get(config.getUrl);
             req.then(
                 function (res) {
+                    // Disable update if user is on settings view to keep input changes
                     if (forceOneUpdate || ['settings'].indexOf(this.view) == -1) {
                         this.status = res.body;
+                        // Prepare data to be displayed on frontend
                         if (this.status.OnTime != null) {
                             var onTimeToTime = function (seconds) {
                                 var numdays = Math.floor(seconds / 86400);
@@ -262,26 +293,33 @@ var app = new Vue({
                         this.sleepMode = this._statusBitOn(18);
                         this.electrolysisCycleStatus = this._statusBitOn(19);
                     }
+                    // Schedule new request
                     setTimeout(this._updater, this.updaterInterval);
                 }.bind(this),
-                function (res) { setTimeout(this._updater, this.updaterInterval); }.bind(this)
+                function (res) {
+                    // Schedule new request
+                    setTimeout(this._updater, this.updaterInterval);
+                }.bind(this)
             );
         },
+        // Change language method activated when language is switched
         _changeLanguage: function (language) {
             this.activeLanguage = language;
             this.lang = translations[this.activeLanguage.toLowerCase()];
             this.langToggled = false;
+            // Try to save selected language to local storage
             if (typeof(Storage) != undefined && localStorage != undefined) {
                 localStorage.setItem('lang', language);
             }
             this._setTitle();
         },
+        // Used for checking bit state of status variable
         _statusBitOn: function (position) {
             return (this.status.Status & Math.pow(2, position)) > 0;
         }
     },
     data: {
-        view: 'Home',
+        view: 'Home', // active view
         onTimeDisplayString: '',
         sleepMode: null,
         electrolysisCycleStatus: null,
