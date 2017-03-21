@@ -9,12 +9,15 @@
 <body>
     <div id="app">
         <div class="container">
-            <div v-if="view != 'home'" class="hidden-md hidden-lg" style="position: fixed; bottom: 10px; left: 5px; z-index: 100;">
-                <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+            <div v-if="view != 'Home'" class="hidden-md hidden-lg" style="position: fixed; bottom: 10px; left: 5px; z-index: 100;">
+                <button  v-on:click="view = 'Home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
             </div>
             <br>
             <div class="row">
                 <div class="col-xs-12">
+                    <h3 class="text-info text-center">
+                        {{ 'NewTS - ' + lang[view] }}
+                    </h3>
                     <div class="dropdown pull-right">
                         <button type="button" class="btn btn-default" v-on:click="langToggled = !langToggled" style="cursor: pointer; padding: 0 4px 0 4px;">
                             <img v-bind:src="'/' + activeLanguage + '.svg'" style="width: 40px; height: 40px" alt="flag">
@@ -35,7 +38,7 @@
             </div>
             <br>
             <transition name="fade" mode="out-in">
-                <div v-if="view === 'home'" class="row" key="home">
+                <div v-if="view === 'Home'" class="row" key="Home">
                     <div class="col-sm-4 text-info"><strong>{{ lang['On Time'] }}:</strong> {{ onTimeDisplayString }}</div>
                     <div class="col-sm-4">
                         <div style="display: inline-block; vertical-align: top; padding-top: 4px;">
@@ -154,7 +157,7 @@
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
-                        <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                        <button  v-on:click="view = 'Home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
                     </div>
                     <div class="col-md-4"></div>
                 </div>
@@ -186,17 +189,19 @@
                     <div class="clearfix"></div>
 
                     <div class="col-md-4"></div>
-                    <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Electrolysis cycle status'] }}:</label>
-                        <div v-on:click="_submit(19)" v-bind:style="electrolysisCycleStatus ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
+                    <div class="col-xs-12 col-md-4" style="padding-top: 16px"><label>{{ lang['Electrolysis cycle'] }}:</label><br>
+                        <div v-on:click="_submit(19)" v-bind:style="electrolysisCycleStatus ? 'background-color: #d9edf7;' : 'background-color: #fff;'" style="display: inline-block; cursor: pointer; width: 75px; height: 25px; border-color: #bce8f1; border: 1px solid #bce8f1; border-radius: 100px">
                             <span v-bind:style="electrolysisCycleStatus ? 'background-color: #00ccff; float: right;' : 'background-color: #999; float: left;'" style="width: 25px; height: 25px; background-color: #00ccff; float: right; border-radius: 100px"></span>
                         </div>
+                        <span v-if="electrolysisCycleStatus" class="text-info" style="vertical-align: top;">{{ lang['High cycle'] }}</span>
+                        <span v-else class="text-info" style="vertical-align: top;">{{ lang['Low cycle'] }}</span>
                     </div>
                     <div class="col-md-4"></div>
                     <div class="clearfix"></div>
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
-                        <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                        <button  v-on:click="view = 'Home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
                     </div>
                     <div class="col-md-4"></div>
                 </div>
@@ -303,7 +308,7 @@
 
                     <div class="col-md-4"></div>
                     <div class="col-md-4 text-right">
-                        <button  v-on:click="view = 'home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
+                        <button  v-on:click="view = 'Home'" class="btn btn-primary" type="button">{{ lang['Back'].toUpperCase() }}</button>
                     </div>
                     <div class="col-md-4"></div>
 

@@ -39,9 +39,12 @@ var translations = {
         'The PH probe has been calibrated': 'The PH probe has been calibrated',
         'The PH probe is not calibrated': 'The PH probe is not calibrated',
         'Sleep mode': 'Sleep mode',
-        'Electrolysis cycle status': 'Electrolysis cycle status',
+        'Electrolysis cycle': 'Electrolysis cycle',
         'Trial license expired': 'Trial license expired',
         'Trial license days left': 'Trial license days left',
+        'Home': 'Home',
+        'High cycle': 'High cycle',
+        'Low cycle': 'Low cycle',
     },
     'fr': {
         'Back': 'Retour',
@@ -73,9 +76,11 @@ var translations = {
         'The PH probe has been calibrated': 'La sonde PH a été calibrée',
         'The PH probe is not calibrated': 'La sonde PH n’est pas calibrée',
         'Sleep mode': 'Mode veille',
-        'Electrolysis cycle status': 'Cycle d’électrolyse',
+        'Electrolysis cycle': 'Cycle d’électrolyse',
         'License expired': 'La licence est expirée',
-        'Trial license days left': 'Durée d’expiration de la licence'
+        'Trial license days left': 'Durée d’expiration de la licence',
+        'High cycle': 'Cycle rapide',
+        'Low cycle': 'Cycle lent',
     },
     'de': {},
     'it': {},
@@ -276,7 +281,7 @@ var app = new Vue({
         }
     },
     data: {
-        view: 'home',
+        view: 'Home',
         onTimeDisplayString: '',
         sleepMode: null,
         electrolysisCycleStatus: null,
