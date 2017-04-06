@@ -259,7 +259,7 @@ var app = new Vue({
             req.then(
                 function (res) {
                     // Disable update if user is on settings view to keep input changes
-                    if (forceOneUpdate || ['settings'].indexOf(this.view) == -1) {
+                    if (forceOneUpdate || ['Settings'].indexOf(this.view) == -1) {
                         this.status = res.body;
                         // Prepare data to be displayed on frontend
                         if (this.status.OnTime != null) {
