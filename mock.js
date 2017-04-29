@@ -5,7 +5,7 @@ const hostname = 'localhost';
 const port = 11111;
 
 var data = {
-    "ID": "EFA23B56",
+    "ID": 12342,
     "Status": 65535,
     "WaterHardness": 100,
     "PH": 4.5,

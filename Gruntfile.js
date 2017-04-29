@@ -15,9 +15,17 @@ module.exports = function (grunt) {
                     './prod/app.js': ['./vue.min.js', './vue-resource.min.js', './app.js']
                 }
             }
+        },
+        processhtml: {
+            dist: {
+                files: {
+                    './prod/index.html': ['./index.html']
+                }
+            }
         }
     });
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.registerTask('default', ['cssmin', 'uglify']);
+    grunt.loadNpmTasks('grunt-processhtml');
+    grunt.registerTask('default', ['cssmin', 'uglify', 'processhtml']);
 };

@@ -218,7 +218,7 @@
                     <div class="col-md-4"></div>
                     <div class="col-md-4">
                         <label>{{ lang['Identification name'] }}</label>
-                        <br><span>{{ status.ID }}</span>
+                        <br><span>{{ status.ID.toString(16) }}</span>
                         <br>
                         <br>
                     </div>
@@ -336,8 +336,10 @@
             </div>
         </div>
     </div>
+    <!-- build:js /app.js -->
     <script src="/vue.min.js"></script>
     <script src="/vue-resource.min.js"></script>
     <script src="/app.js"></script>
+    <!-- /build -->
 </body>
 </html>                                                                                        
