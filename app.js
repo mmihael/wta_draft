@@ -209,7 +209,8 @@ var app = new Vue({
                 Key2: this.status.Key2,
                 Key3: this.status.Key3,
                 StationSSID: this.status.StationSSID,
-                StationPwd: this.status.StationPwd
+                StationPwd: this.status.StationPwd,
+                ID: parseInt(this.status.ID)
             };
             // If trigger is switch toggle corresponding status bit
             if (switchClick != false) {
